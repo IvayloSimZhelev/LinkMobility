@@ -1,0 +1,23 @@
+<p-dialog [(visible)]="customerDialog" [header]="headers" [modal]="true" styleClass="p-fluid"  [style]="{width: '25vw', height:'27vw'}">
+  <ng-template pTemplate="content">       
+    <div *ngFor="let field of cols">
+      <label [for]="field.name">{{field.label}}</label>
+        <ng-container [ngSwitch]="field.type">
+          <p-dropdown *ngSwitchCase="'select'" [(ngModel)]="customerValue[field.name]" id="{{field.name}}" [options]="subscriptionState" placeholder="Select"></p-dropdown>
+          <input *ngSwitchCase="'text'" type="text" pInputText [id]="field.name" [(ngModel)]="customerValue[field.name]" [required]="field.required" autofocus /> 
+          <p-checkbox *ngSwitchCase="'checkbox'" [(ngModel)]="customerValue[field.name]" [label]="field.label" [binary]="true" (onChange)="customerValue[field.name] = $event.checked"></p-checkbox>
+          <p-radioButton *ngSwitchCase="'radio'" [(ngModel)]="customerValue[field.name]" [name]="field.name" [value]="field.value"></p-radioButton>
+        </ng-container>
+        <small class="p-error" *ngIf="submitted && !!customerValue[field.name] && field.required">{{field.label}} is required.</small>
+      </div>
+      
+  </ng-template>
+  <ng-template pTemplate="footer">
+      <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+      <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveCustomer()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>

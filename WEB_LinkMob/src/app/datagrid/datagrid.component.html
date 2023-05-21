@@ -1,0 +1,105 @@
+<div class="card">
+    <h1>Customers</h1>
+    <p-toolbar styleClass="mb-4 gap-2">
+        <ng-template pTemplate="left">
+            <div style="padding: 5px;">
+                <button pButton  label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+            </div>    
+        </ng-template>        
+    </p-toolbar>
+    <p-table #dt 
+    [columns]="cols" 
+    [value]="filteredCustomers" 
+    [rows]="rowsPerPage"
+    [totalRecords]="totalRecordsValues"
+    [paginator]="true"     
+    [lazy]="true" 
+    [rowHover]="true" 
+    [loading]="loading" 
+    [filterDelay]="0" 
+    selectionMode="single"
+    [(selection)]="selectedRows"
+    (onLazyLoad)="onPageChange($event)"
+    [(selection)]="selectedCustomer"
+    (onRowSelect)="onRowSelect($event)"
+    [customSort]="true" 
+    dataKey="id"
+    [tableStyle]="{'min-width': '50rem', 'min-height': '50rem'}" 
+    styleClass="p-datatable-customers p-datatable-gridlines"
+    [currentPageReportTemplate]="'Showing {first} to {last} of {totalRecordsValues} entries'" >
+    <ng-template pTemplate="caption">
+        <div class="flex">
+            <button pButton label="Clear" class="p-button-outlined" icon="pi pi-filter-slash" (click)="clear(dt)"></button>
+            <div style="margin-left: 1500px;float: right;">
+                <span class="p-input-icon-left ml-auto">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" [(ngModel)]="searchTerm" (input)="SearchByCompanyName()" placeholder="Search keyword" />
+                </span>
+            </div>
+        </div>
+        
+    </ng-template>
+    <ng-template pTemplate="header" let-columns>
+        <tr>
+            <th style="width:15%">Company Name</th>        
+            <th style="width:15%">Full Address</th>
+            <th style="width:15%">Subscription State</th>
+            <th style="width:15%">Number Of Invoices</th>          
+            <th style="width:7%">ACTION</th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-customer>
+        <tr [pSelectableRow]="customer">
+            <td>{{customer.companyName}}</td>
+            <td>{{customer.fullAddress}}</td>  
+            <td>{{customer.subscriptionState}}</td>  
+            <td>{{customer.numberOfInvoices}}</td>
+            <td>
+                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editCustomer(customer)"></button>
+                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteCustomer(customer)"></button>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div class="p-d-flex p-ai-center p-jc-between">
+            In total there are {{filteredCustomers ? totalRecordsValues : 0 }} customers.
+        </div>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+		<tr>
+			<td colspan="7">No customers found.</td>
+		</tr>
+	</ng-template>
+    </p-table>
+</div>
+
+<div class="card">
+    <h1>Inovices</h1>
+    <p-table 
+    [value]="filteredSecondGrid" 
+    [tableStyle]="{'min-width': '10rem', 'min-height': '10rem'}" 
+    styleClass="p-datatable-customers p-datatable-gridlines">
+    <ng-template pTemplate="header" let-columns>
+        <tr>
+            <th pSortableColumn="companyName" style="width:15%">Invoice Number<p-sortIcon field="companyName"></p-sortIcon></th>        
+            <th pSortableColumn="date" style="width:15%">Date<p-sortIcon field="date"></p-sortIcon></th>
+            <th pSortableColumn="total" style="width:15%">Total<p-sortIcon field="total"></p-sortIcon></th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-filteredCustomers>
+        <tr *ngFor="let invoiceItem of filteredCustomers.invoice">
+          <td>{{ invoiceItem.invoiceNumber }}</td>
+          <td>{{ invoiceItem.date }}</td>
+          <td>{{ invoiceItem.total }}</td>
+        </tr>
+      </ng-template>
+    <ng-template pTemplate="emptymessage">
+		<tr>
+			<td colspan="7">No customers found.</td>
+		</tr>
+	</ng-template>
+    </p-table>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<app-dialogs [customerDialog]="customerDialog" [customerValue]="customer" [cols]="cols" [subscriptionState]="subscriptionState" (messageEvent1)="receiveCustomerDialog($event)" (messageEvent2)="receiveSubmitted($event)" (messageEvent3)="receiveCustomerValue($event)" ></app-dialogs>

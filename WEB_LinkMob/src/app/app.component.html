@@ -1,0 +1,20 @@
+<!-- Toolbar -->
+<p-toolbar>
+  <div class="p-toolbar-group-right">
+    <a rel="noopener" [routerLink]="isLoggedIn ? '/dashboard' : '/login'" (click)="toggleLoginStatus()">
+      <span>{{ isLoggedIn ? 'Logout' : 'Login' }}</span>
+    </a>
+  </div>
+</p-toolbar>
+
+
+<div class="content" role="main">
+  <!-- Footer -->
+  <footer>
+      
+  </footer>
+
+</div>
+
+<router-outlet></router-outlet>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

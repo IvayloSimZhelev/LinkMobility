@@ -1,0 +1,26 @@
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <p-dialog [(visible)]="carDialog" [header]="headers" [modal]="true" styleClass="p-fluid" [style]="{width: '25vw', height:'27vw'}">
+    <ng-template pTemplate="content">         
+    <div class="p-field">
+      <label for="email">Email</label>
+      <input type="text" id="email" formControlName="email" class="p-inputtext" [ngClass]="{ 'p-invalid': submitted && loginForm.get('email').hasError('email') }" />
+      <small class="p-error" *ngIf="submitted && loginForm.get('email').hasError('required')">Email is required.</small>
+      <small class="p-error" *ngIf="submitted && loginForm.get('email').hasError('email')">Invalid email format.</small>      
+    </div>
+    <div class="p-field">
+      <label for="password">Password</label>
+      <input type="password" id="password" formControlName="password" class="p-inputtext" [ngClass]="{ 'p-invalid': submitted && loginForm.get('password').hasError('required') }" />
+      <small class="p-error" *ngIf="submitted && loginForm.get('password').hasError('required')">Password is required.</small>
+    </div>
+    <small class="p-error" *ngIf="errorMessage">{{ errorMessage }}</small>
+  </ng-template>  
+  <ng-template pTemplate="footer">
+    <button type="button" pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+    <button type="submit" pButton pRipple label="Login" icon="pi pi-check" class="p-button-text" (click)="onSubmit()"></button>
+  </ng-template>
+  </p-dialog>
+</form>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog> 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
