@@ -68,14 +68,14 @@ namespace API_LinkMob.Controllers
         {
             var customer = new Customer
             {
-                Id = customerDto.Id,
-                CompanyName = customerDto.CompanyName,
-                Address = customerDto.Address,
-                Country = customerDto.Country,
-                State = customerDto.State,
+                Id = customerDto.id,
+                CompanyName = customerDto.companyName,
+                Address = customerDto.address,
+                Country = customerDto.country,
+                State = customerDto.state,
                 Invoice = new List<Invoice>(),
-                NumberOfInvoices = customerDto.NumberOfInvoices,
-                SubscriptionState = customerDto.SubscriptionState
+                NumberOfInvoices = customerDto.numberOfInvoices,
+                SubscriptionState = customerDto.subscriptionState
             };
 
             await _mongoCustomerRepository.CreateCustomerAsync(customer);
@@ -92,12 +92,12 @@ namespace API_LinkMob.Controllers
                 return NotFound();
             }
 
-            existingCustomer.CompanyName = customer.CompanyName;
-            existingCustomer.Address = customer.Address;
-            existingCustomer.Country = customer.Country;
-            existingCustomer.State = customer.State;
-            existingCustomer.NumberOfInvoices = customer.NumberOfInvoices;
-            existingCustomer.SubscriptionState = customer.SubscriptionState;
+            existingCustomer.CompanyName = customer.companyName;
+            existingCustomer.Address = customer.address;
+            existingCustomer.Country = customer.country;
+            existingCustomer.State = customer.state;
+            existingCustomer.NumberOfInvoices = customer.numberOfInvoices;
+            existingCustomer.SubscriptionState = customer.subscriptionState;
 
             await _mongoCustomerRepository.UpdateCustomerAsync(existingCustomer);
 
