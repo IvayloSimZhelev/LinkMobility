@@ -2,10 +2,6 @@
 {
     public class Invoice
     {
-        public Invoice()
-        {
-
-        }
         public Guid Id { get; set; }
         public string? InvoiceNumber { get; set; }
         public DateTime? Date { get; set; }

@@ -1,5 +1,4 @@
 ﻿using Enitities;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace MongoDb.Repositories
@@ -7,11 +6,13 @@ namespace MongoDb.Repositories
     public class MongoUserRepository : IMongoUserRepository
     {
         private readonly IMongoCollection<User> _users;
+        private const string _collectionName = "Users";
+        private const string _databaseName = "LinkMobilityDB";
 
         public MongoUserRepository(IMongoClient client)
         {
-            var database = client.GetDatabase("LinkMobilityDB");
-            _users = database.GetCollection<User>("Users");
+            var database = client.GetDatabase(_databaseName);
+            _users = database.GetCollection<User>(_collectionName);
         }
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
@@ -19,33 +20,36 @@ namespace MongoDb.Repositories
             return await _users.Find(u => true).ToListAsync();
         }
 
-        public async Task<User> GetUserByIdAsync(string Id)
+        public async Task<User> GetUserByIdAsync(Guid Id)
         {
-            return await _users.Find(u => u.Id == Id).FirstOrDefaultAsync();
+            FilterDefinition<User> filter = Builders<User>.Filter.Eq(user => user.Id, Id);
+            return await _users.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task CreateUserAsync(User user)
         {
+            if(user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             await _users.InsertOneAsync(user);
         }
 
-        public async Task<bool> UpdateUserAsync(string Id, User user)
+        public async Task UpdateUserAsync(User user)
         {
-            var updateResult = await _users.UpdateOneAsync(
-                u => u.Id == Id,
-                Builders<User>.Update
-                    .Set(u => u.Name, user.Name)
-                    .Set(u => u.Email, user.Email)
-                    .Set(u => u.Password, user.Password)
-            );
-
-            return updateResult.ModifiedCount > 0;
+            if(user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            FilterDefinition<User> filter = Builders<User>.Filter.Eq(x => x.Id, user.Id);
+            await _users.ReplaceOneAsync(filter, user);
         }
 
-        public async Task<bool> DeleteUserAsync(string Id)
+        public async Task DeleteUserAsync(Guid Id)
         {
-            var deleteResult = await _users.DeleteOneAsync(u => u.Id == Id);
-            return deleteResult.DeletedCount > 0;
+            FilterDefinition<User> filter = Builders<User>.Filter.Eq(user => user.Id, Id);
+            await _users.DeleteOneAsync(filter);
         }
 
         public async Task<DeleteResult?> DeleteUserManyAsync(string[] ids)
@@ -53,13 +57,12 @@ namespace MongoDb.Repositories
             try
             {
                 var filter = Builders<User>.Filter.In("_id", ids);
-                return  await _users.DeleteManyAsync(filter);
+                return await _users.DeleteManyAsync(filter);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 return null;
-                // log need to be here;
-                //return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                //log need to be here;
             }
         }
 

@@ -34,7 +34,7 @@ namespace API_LinkMob.Controllers
             }
 
             var pagedCustomers = (await _mongoCustomerRepository.GetAllCustomersByPageAsync(companyName, page, pageSize))
-                                 .Select(items => items.asDto());
+                                 .Select(items => items.asCustomerDto());
 
             // Create object pagingation 
             var response = new PaginationResponse<CustomerDto>
@@ -59,7 +59,7 @@ namespace API_LinkMob.Controllers
                 return NotFound();
             }
 
-            return customer.asDto();
+            return customer.asCustomerDto();
         }
 
         // POST: api/users

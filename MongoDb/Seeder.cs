@@ -81,9 +81,9 @@ namespace MongoDb
 
             var users = new List<User>
             {
-                new User { Name = "John",  Email = "John@gmail.com", Password = "Demos2"},
-                new User { Name = "Ivan",  Email = "Ivan@gmail.com", Password = "Demos1"},
-                new User { Name = "Ivaylo",  Email = "ivaylo.sim.zhelev@gmail.com", Password = "Demos3"},
+                new User { Id = Guid.NewGuid(), Name = "John",  Email = "John@gmail.com", Password = "Demos2"},
+                new User { Id = Guid.NewGuid(), Name = "Ivan",  Email = "Ivan@gmail.com", Password = "Demos1"},
+                new User { Id = Guid.NewGuid(), Name = "Ivaylo",  Email = "ivaylo.sim.zhelev@gmail.com", Password = "Demos3"},
             };
 
             _users.InsertMany(users);

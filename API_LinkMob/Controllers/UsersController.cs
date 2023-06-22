@@ -1,8 +1,10 @@
 ﻿
+using API_LinkMob.Dto.Dtos;
+using API_LinkMob.Extentions;
 using Enitities;
 using Microsoft.AspNetCore.Mvc;
 using MongoDb;
-using MongoDb.Services;
+using MongoDb.Repositories;
 
 namespace API_LinkMob.Controllers
 {
@@ -10,12 +12,12 @@ namespace API_LinkMob.Controllers
     [ApiController]
     public class UsersController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IMongoUserRepository _mongoUserRepository;
         private readonly Seeder _userSeeder;
 
-        public UsersController(IUserService userService, Seeder userSeeder)
+        public UsersController(IMongoUserRepository mongoUserRepository, Seeder userSeeder)
         {
-            _userService = userService;
+            _mongoUserRepository = mongoUserRepository;
             _userSeeder = userSeeder;
             _userSeeder.Seed();
         }
@@ -24,8 +26,9 @@ namespace API_LinkMob.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var users = await _userService.GetAllUsersAsync();
-            if (users == null)
+
+            var users = await _mongoUserRepository.GetAllUsersAsync();
+            if(users == null)
             {
                 return NotFound();
             }
@@ -35,30 +38,30 @@ namespace API_LinkMob.Controllers
 
         // GET: api/users/5
         [HttpGet("{id}", Name = "GetUser")]
-        public async Task<ActionResult<User>> GetUser(string id)
+        public async Task<ActionResult<UserDto>> GetUser(Guid Id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            
+            var user = await _mongoUserRepository.GetUserByIdAsync(Id);
 
-            if (user == null)
+
+            if(user == null)
             {
                 return NotFound();
             }
 
-            return user;
+            return user.asUserDto();
         }
 
         // POST: api/users/login
         [HttpPost("login")]
-        public async Task<ActionResult<User>> LoginUser(User user)
+        public async Task<ActionResult<UserDto>> LoginUser(User user)
         {
-            User? validUser = null;
-            if (!string.IsNullOrEmpty(user?.Email) && !string.IsNullOrEmpty(user?.Password))
+            UserDto? validUser = null;
+            if(!string.IsNullOrEmpty(user?.Email) && !string.IsNullOrEmpty(user?.Password))
             {
-                validUser = await _userService.ValidateUserAsync(user.Email, user.Password);
+                validUser = (await _mongoUserRepository.ValidateUserAsync(user.Email, user.Password)).asUserDto();
             }
 
-            if (validUser == null)
+            if(validUser == null)
             {
                 return Unauthorized();
             }
@@ -69,30 +72,53 @@ namespace API_LinkMob.Controllers
 
         // POST: api/users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<UserDto>> CreateUser(UserDto userDto)
         {
-            await _userService.CreateUserAsync(user);
-            return CreatedAtRoute("GetUser", new { id = user.Id }, user);
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Name = userDto.name,
+                Email = userDto.email,
+                Password = userDto.password,
+            };
+
+            await _mongoUserRepository.CreateUserAsync(user);
+            return CreatedAtRoute(nameof(GetUser), new { id = user.Id }, user);
         }
 
         // PUT: api/users/5
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> UpdateUser(string id, User userIn)
+        public async Task<IActionResult> UpdateUser(Guid Id, UserDto userDto)
         {
-            if (userIn == null)
+            var existingUser = await _mongoUserRepository.GetUserByIdAsync(Id);
+
+            if(existingUser == null)
             {
                 return NotFound();
             }
-            await _userService.UpdateUserAsync(id, userIn);
+
+            existingUser.Id = userDto.id;
+            existingUser.Name = userDto.name;
+            existingUser.Email = userDto.email;
+            existingUser.Password = userDto.password;
+
+            await _mongoUserRepository.UpdateUserAsync(existingUser);
 
             return NoContent();
         }
 
         // DELETE: api/users/5
         [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> DeleteUser(string id)
+        public async Task<IActionResult> DeleteUser(Guid Id)
         {
-            await _userService.DeleteUserAsync(id);
+            var existingUser = await _mongoUserRepository.GetUserByIdAsync(Id);
+
+            if(existingUser == null)
+            {
+                return NotFound();
+            }
+
+            await _mongoUserRepository.DeleteUserAsync(existingUser.Id);
             return NoContent();
         }
     }

@@ -1,6 +1,5 @@
 using MongoDb;
 using MongoDb.Repositories;
-using MongoDb.Services;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
@@ -28,7 +27,6 @@ namespace API_LinkMob
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IMongoUserRepository, MongoUserRepository>();
-            builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IMongoCustomerRepository, MongoCustomerRepository>();
             builder.Services.AddSingleton<Seeder>();
 

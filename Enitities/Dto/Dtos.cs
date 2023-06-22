@@ -37,13 +37,7 @@ namespace API_LinkMob.Dto.Dtos
         public int NumberOfInvoices { get; set; }
     }
 
-    public record InvoiceDto
-    {
-        public Guid Id { get; set; }
-        public string? InvoiceNumber { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Total { get; set; }
-    }
+    public record UserDto(Guid id, string? email, string? name, string? password);
 
-
+    public record InvoiceDto(Guid Id, string? Name, string? Email, string? Password);
 }
