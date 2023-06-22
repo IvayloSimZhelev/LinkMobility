@@ -1,8 +1,6 @@
 ﻿
 using Enitities;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using System;
 
 namespace MongoDb
 {
@@ -29,22 +27,22 @@ namespace MongoDb
         private void SeedCustomer()
         {
 
-            if (_customers.Find(custommer => true).Any())
+            if(_customers.Find(custommer => true).Any())
             {
                 return; // Базата от данни вече е попълнена
             }
 
             var customers = new List<Customer>();
 
-            for (int i = 0; i < 1010; i++)
+            for(int i = 0; i < 1010; i++)
             {
                 var invoices = new List<Invoice>();
 
-                for (int j = 0; j < 2; j++)
+                for(int j = 0; j < 2; j++)
                 {
                     invoices.Add(new Invoice
                     {
-                        Id = ObjectId.GenerateNewId().ToString(),
+                        Id = Guid.NewGuid(),
                         InvoiceNumber = $"INV00{i}",
                         Date = DateTime.UtcNow.AddDays(-j),
                         Total = new Random().Next(100, 1000)
@@ -57,7 +55,7 @@ namespace MongoDb
 
                 customers.Add(new Customer
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
+                    Id = Guid.NewGuid(),
                     CompanyName = $"Company{i}",
                     Address = $"Address{i}",
                     State = $"State{i}",
@@ -76,7 +74,7 @@ namespace MongoDb
 
         private void SeedUser()
         {
-            if (_users.Find(user => true).Any())
+            if(_users.Find(user => true).Any())
             {
                 return; // Базата от данни вече е попълнена
             }

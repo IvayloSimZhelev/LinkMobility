@@ -1,6 +1,9 @@
 using MongoDb;
 using MongoDb.Repositories;
 using MongoDb.Services;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace API_LinkMob
@@ -11,16 +14,22 @@ namespace API_LinkMob
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
+            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
+
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.SuppressAsyncSuffixInActionNames = false;
+            });
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IMongoUserRepository, MongoUserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IMongoCustomerRepository, MongoCustomerRepository>();
-            builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddSingleton<Seeder>();
 
             var mongoClient = new MongoClient("mongodb://localhost:27017");
@@ -31,7 +40,7 @@ namespace API_LinkMob
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if(app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
@@ -42,7 +51,7 @@ namespace API_LinkMob
                             .AllowAnyMethod()
                     );
             }
-            
+
             app.UseRouting();
 
             app.UseHttpsRedirection();

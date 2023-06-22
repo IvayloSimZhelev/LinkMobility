@@ -1,39 +1,43 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MongoDb.Services;
-using MongoDb;
-using Enitities;
-using System.Linq;
+﻿using API_LinkMob.Dto.Dtos;
+using API_LinkMob.Extentions;
 using API_LinkMob.Responses;
+using Enitities;
+using Microsoft.AspNetCore.Mvc;
+using MongoDb;
+using MongoDb.Repositories;
 
 namespace API_LinkMob.Controllers
 {
-    [Route("api/[controller]")]
+
     [ApiController]
+    [Route("api/[controller]")]
     public class CustomersController : Controller
     {
-        private readonly ICustomerService _customerService;
+        private readonly IMongoCustomerRepository _mongoCustomerRepository;
         private readonly Seeder _seeder;
 
-        public CustomersController(ICustomerService customerService, Seeder seeder)
+        public CustomersController(IMongoCustomerRepository mongoCustomerRepository, Seeder seeder)
         {
-            _customerService = customerService;
+            _mongoCustomerRepository = mongoCustomerRepository;
             _seeder = seeder;
             _seeder.Seed();
         }
 
         [HttpGet]
-        public async Task<ActionResult<PaginationResponse<Customer>>> GetCustomers(string? companyName = null, int page = 1, int pageSize = 10)
+        public async Task<ActionResult<PaginationResponse<CustomerDto>>> GetCustomers(string? companyName = null, int page = 1, int pageSize = 10)
         {
-            var totalRecords = await _customerService.GetCountCustomersAsync();
-            if (totalRecords == 0)
+            var totalRecords = await _mongoCustomerRepository.GetCountCustomersAsync();
+
+            if(totalRecords == 0)
             {
                 return NotFound();
             }
-            
-            var pagedCustomers = await _customerService.GetAllCustomersByPageAsync(companyName, page, pageSize);
+
+            var pagedCustomers = (await _mongoCustomerRepository.GetAllCustomersByPageAsync(companyName, page, pageSize))
+                                 .Select(items => items.asDto());
 
             // Create object pagingation 
-            var response = new PaginationResponse<Customer>
+            var response = new PaginationResponse<CustomerDto>
             {
                 Data = pagedCustomers,
                 Page = page,
@@ -46,45 +50,72 @@ namespace API_LinkMob.Controllers
 
         // GET: api/users/5
         [HttpGet("{id}", Name = "GetCustomer")]
-        public async Task<ActionResult<Customer>> GetCustomer(string id)
+        public async Task<ActionResult<CustomerDto>> GetCustomer(Guid Id)
         {
-            var customer = await _customerService.GetCustomerByIdAsync(id);
+            var customer = await _mongoCustomerRepository.GetCustomerByIdAsync(Id);
 
-
-            if (customer == null)
+            if(customer == null)
             {
                 return NotFound();
             }
 
-            return customer;
+            return customer.asDto();
         }
 
         // POST: api/users
         [HttpPost]
-        public async Task<ActionResult<Customer>> CreateCustomer(Customer customer)
+        public async Task<ActionResult<CustomerDto>> CreateCustomer(CustomerDto customerDto)
         {
-            await _customerService.CreateCustomerAsync(customer);
-            return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
+            var customer = new Customer
+            {
+                Id = customerDto.Id,
+                CompanyName = customerDto.CompanyName,
+                Address = customerDto.Address,
+                Country = customerDto.Country,
+                State = customerDto.State,
+                Invoice = new List<Invoice>(),
+                NumberOfInvoices = customerDto.NumberOfInvoices,
+                SubscriptionState = customerDto.SubscriptionState
+            };
+
+            await _mongoCustomerRepository.CreateCustomerAsync(customer);
+            return CreatedAtRoute(nameof(GetCustomer), new { id = customer.Id }, customer);
         }
 
         // PUT: api/users/5
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> UpdateCustomer(string id, Customer customerId)
+        public async Task<IActionResult> UpdateCustomer(Guid id, CustomerDto customer)
         {
-            if (customerId == null)
+            var existingCustomer = await _mongoCustomerRepository.GetCustomerByIdAsync(id);
+            if(existingCustomer == null)
             {
                 return NotFound();
             }
-            await _customerService.UpdateCustomerAsync(id, customerId);
+
+            existingCustomer.CompanyName = customer.CompanyName;
+            existingCustomer.Address = customer.Address;
+            existingCustomer.Country = customer.Country;
+            existingCustomer.State = customer.State;
+            existingCustomer.NumberOfInvoices = customer.NumberOfInvoices;
+            existingCustomer.SubscriptionState = customer.SubscriptionState;
+
+            await _mongoCustomerRepository.UpdateCustomerAsync(existingCustomer);
 
             return NoContent();
         }
 
         // DELETE: api/users/5
         [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> DeleteCustomer(string id)
+        public async Task<IActionResult> DeleteCustomer(Guid Id)
         {
-            await _customerService.DeleteCustomerAsync(id);
+            var existingCustomer = await _mongoCustomerRepository.GetCustomerByIdAsync(Id);
+            if(existingCustomer == null)
+            {
+                return NotFound();
+            }
+
+
+            await _mongoCustomerRepository.DeleteCustomerAsync(existingCustomer.Id);
             return NoContent();
         }
     }
