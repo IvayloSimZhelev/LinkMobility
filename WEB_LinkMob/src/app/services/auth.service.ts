@@ -1,6 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +25,7 @@ export class AuthService {
 
   loginUser(email: string, password: string): Observable<any> {
     const payload = {
-      id: "",
+      id: uuidv4(),
       name: "",
       email: email,
       password: password
